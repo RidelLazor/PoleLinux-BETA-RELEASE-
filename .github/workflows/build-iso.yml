@@ -1,0 +1,33 @@
+name: Build PoleLinux ISO
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate Plymouth assets
+        run: python3 plymouth-theme/generate-assets.py
+
+      - name: Build Docker image
+        run: docker build -t polelinux-arch-builder .
+
+      - name: Build ISO
+        run: |
+          docker run --rm --privileged --network=host \
+            -v ${{ github.workspace }}:/build \
+            polelinux-arch-builder \
+            bash /build/scripts/build-iso.sh
+
+      - name: Upload ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: polelinux-iso
+          path: images/*.iso
+          retention-days: 30

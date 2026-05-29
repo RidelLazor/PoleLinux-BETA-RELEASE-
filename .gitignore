@@ -1,0 +1,8 @@
+images/
+*.iso
+build.log
+/tmp/
+build-env/
+build-output.log
+plymouth-theme/assets/
+build-output*.log

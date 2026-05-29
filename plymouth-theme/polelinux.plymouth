@@ -1,0 +1,19 @@
+[Plymouth Theme]
+Name=PoleLinux
+Description=Boot splash with spinning logo and loading bar for PoleLinux
+ModuleName=two-step
+
+[two-step]
+ImageDir=/usr/share/plymouth/themes/polelinux
+BackgroundStartColor=0x14141E
+BackgroundEndColor=0x14141E
+UseThrobber=true
+ThrobberFile=spinner-0000.png
+ThrobberSpeed=2.0
+ProgressBarShow=true
+ProgressBarBackgroundFile=throbber-bg.png
+ProgressBarForegroundFile=throbber-fg.png
+HorizontalAlignment=0.5
+VerticalAlignment=0.6
+Transition=none
+TransitionDuration=0.0
