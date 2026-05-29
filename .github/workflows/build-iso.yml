@@ -13,7 +13,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Generate Plymouth assets
-        run: python3 plymouth-theme/generate-assets.py
+        run: |
+          pip install Pillow
+          python3 plymouth-theme/generate-assets.py
 
       - name: Build Docker image
         run: docker build -t polelinux-arch-builder .
