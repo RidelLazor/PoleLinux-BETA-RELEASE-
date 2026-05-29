@@ -281,7 +281,7 @@ menuentry "PoleLinux" {
 GRUB_CFG
 
 mkdir -p "$PROFILE_DIR/syslinux"
-cat > "$PROFILE_DIR/syslinux/archiso_sys.cfg" << 'SYSLINUX'
+cat > "$PROFILE_DIR/syslinux/syslinux.cfg" << 'SYSLINUX'
 DEFAULT archiso
 LABEL archiso
     LINUX /%INSTALL_DIR%/boot/vmlinuz-linux
