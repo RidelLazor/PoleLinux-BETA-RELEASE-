@@ -39,7 +39,14 @@ def make_throbber_bar():
 
 
 def make_spinner_frames():
-    logo = Image.open(LOGO_PATH).convert("RGBA")
+    if os.path.exists(LOGO_PATH):
+        logo = Image.open(LOGO_PATH).convert("RGBA")
+    else:
+        logo = Image.new("RGBA", (LOGO_W, LOGO_H), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(logo)
+        draw.ellipse([10, 10, LOGO_W - 10, LOGO_H - 10], fill=(100, 180, 255, 255))
+        draw.ellipse([40, 40, LOGO_W - 40, LOGO_H - 40], fill=(20, 20, 30, 255))
+        draw.ellipse([70, 70, LOGO_W - 70, LOGO_H - 70], fill=(100, 180, 255, 255))
     logo = logo.resize((LOGO_W, LOGO_H), Image.LANCZOS)
     cx, cy = LOGO_W // 2, LOGO_H // 2
     for i in range(FRAMES):
