@@ -51,7 +51,7 @@ iso_application="PoleLinux Live"
 iso_version="1.0"
 install_dir="arch"
 buildmodes=('iso')
-bootmodes=('bios.syslinux')
+bootmodes=('bios.syslinux' 'uefi.grub')
 arch="x86_64"
 pacman_conf="pacman.conf"
 airootfs_image_type="squashfs"
@@ -425,10 +425,14 @@ echo "=== PoleLinux Customization Complete ==="
 CUSTOM
 chmod +x "$PROFILE_DIR/airootfs/root/customize_airootfs.sh"
 
+echo "==> Patching mkarchiso for error reporting..."
+sed '/^set -e -u$/a trap '"'"'echo "ERROR at line $LINENO: $BASH_COMMAND (exit $?) >&2"'"'"' ERR' /usr/sbin/mkarchiso > /tmp/mkarchiso-patched
+chmod +x /tmp/mkarchiso-patched
+
 echo "==> Running mkarchiso (with retry on network errors)..."
 for i in 1 2 3; do
     echo "--- Attempt $i ---"
-    if mkarchiso -v -w "$BUILD_DIR" -o "$OUT_DIR" "$PROFILE_DIR" 2>&1; then
+    if /tmp/mkarchiso-patched -v -w "$BUILD_DIR" -o "$OUT_DIR" "$PROFILE_DIR" 2>&1; then
         echo "mkarchiso succeeded on attempt $i"
         break
     fi
