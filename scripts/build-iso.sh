@@ -425,8 +425,8 @@ echo "=== PoleLinux Customization Complete ==="
 CUSTOM
 chmod +x "$PROFILE_DIR/airootfs/root/customize_airootfs.sh"
 
-echo "==> Patching mkarchiso for error reporting..."
-sed '/^set -e -u$/a trap '"'"'echo "ERROR at line $LINENO: $BASH_COMMAND (exit $?) >&2"'"'"' ERR' /usr/sbin/mkarchiso > /tmp/mkarchiso-patched
+echo "==> Patching mkarchiso (removing set -e for debugging)..."
+sed 's/^set -e -u$/set -u/' /usr/sbin/mkarchiso > /tmp/mkarchiso-patched
 chmod +x /tmp/mkarchiso-patched
 
 echo "==> Running mkarchiso (with retry on network errors)..."
