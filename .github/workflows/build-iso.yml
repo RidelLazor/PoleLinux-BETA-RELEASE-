@@ -26,9 +26,19 @@ jobs:
             -v ${{ github.workspace }}:/build \
             -v /var/cache/pacman/pkg:/var/cache/pacman/pkg:ro \
             polelinux-arch-builder \
-            bash /build/scripts/build-iso.sh
+            bash -x /build/scripts/build-iso.sh 2>&1 | tee build.log
+        continue-on-error: true
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
+          retention-days: 7
 
       - name: Upload ISO
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: polelinux-iso

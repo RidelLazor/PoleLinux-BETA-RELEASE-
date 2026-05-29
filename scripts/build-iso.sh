@@ -425,14 +425,10 @@ echo "=== PoleLinux Customization Complete ==="
 CUSTOM
 chmod +x "$PROFILE_DIR/airootfs/root/customize_airootfs.sh"
 
-echo "==> Patching mkarchiso to disable set -e for debugging..."
-sed 's/^set -e -u$/set +e +u/' /usr/sbin/mkarchiso > /tmp/mkarchiso-debug
-chmod +x /tmp/mkarchiso-debug
-
 echo "==> Running mkarchiso (with retry on network errors)..."
 for i in 1 2 3; do
     echo "--- Attempt $i ---"
-    if /tmp/mkarchiso-debug -v -w "$BUILD_DIR" -o "$OUT_DIR" "$PROFILE_DIR" >"$OUT_DIR/mkarchiso-debug.log" 2>&1; then
+    if mkarchiso -v -w "$BUILD_DIR" -o "$OUT_DIR" "$PROFILE_DIR" 2>&1; then
         echo "mkarchiso succeeded on attempt $i"
         break
     fi
