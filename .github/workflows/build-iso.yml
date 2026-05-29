@@ -24,6 +24,7 @@ jobs:
         run: |
           docker run --rm --privileged --network=host \
             -v ${{ github.workspace }}:/build \
+            -v /var/cache/pacman/pkg:/var/cache/pacman/pkg:ro \
             polelinux-arch-builder \
             bash /build/scripts/build-iso.sh
 

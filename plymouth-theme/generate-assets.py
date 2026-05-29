@@ -24,6 +24,18 @@ def make_background():
     img.save(os.path.join(OUT, "background.png"), optimize=True)
 
 
+def make_wallpaper():
+    img = Image.new("RGBA", (1920, 1080), BG_COLOR + (255,))
+    draw = ImageDraw.Draw(img)
+    cx, cy = 960, 540
+    for r, alpha in [(300, 40), (200, 60), (100, 80)]:
+        draw.ellipse([cx - r, cy - r, cx + r, cy + r],
+                     fill=COLOR_BAR_FG + (alpha,))
+    img.save(os.path.join(OUT, "wallpaper.png"), optimize=True)
+    img.thumbnail((320, 180), Image.LANCZOS)
+    img.save(os.path.join(OUT, "wallpaper-thumb.png"), optimize=True)
+
+
 def make_throbber_bar():
     bg = Image.new("RGBA", (BAR_W, BAR_H), (0, 0, 0, 0))
     draw_bg = ImageDraw.Draw(bg)
@@ -59,6 +71,7 @@ def make_spinner_frames():
 def main():
     print("Generating PoleLinux Plymouth assets...")
     make_background()
+    make_wallpaper()
     make_throbber_bar()
     make_spinner_frames()
     print(f"  -> {OUT}/")
