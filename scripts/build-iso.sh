@@ -421,8 +421,8 @@ useradd -m -G wheel,audio,video,storage,optical -s /bin/bash user
 echo "user:polelinux" | chpasswd
 echo "%wheel ALL=(ALL:ALL) ALL" > /etc/sudoers.d/wheel
 
-# --- Rebuild initramfs ---
-mkinitcpio -P 2>/dev/null || true
+# --- Rebuild initramfs (commented out - archiso's own initramfs must be preserved for live boot)
+# mkinitcpio -P 2>/dev/null || true
 
 # --- Dconf ---
 dconf update
