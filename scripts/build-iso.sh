@@ -599,14 +599,26 @@ echo "=== PoleLinux Customization Complete ==="
 CUSTOM
 chmod +x "$PROFILE_DIR/airootfs/root/customize_airootfs.sh"
 
-echo "==> Patching mkarchiso for debugging (removing set -e -u, enabling xtrace)..."
-sed 's/^set -euo pipefail$/set -x/' /usr/sbin/mkarchiso > /tmp/mkarchiso-patched
+echo "==> Patching mkarchiso for debugging (disabling errexit, injecting debug echoes)..."
+sed '
+  s/^set -euo pipefail$/set +e +u/
+  /^_make_efibootimg() {/ {
+    a\    echo ">>> ENTER _make_efibootimg imgsize_kib=$imgsize_kib" >&2
+    a\    set -x
+  }
+  /^_make_prepare() {/ {
+    a\    echo ">>> ENTER _make_prepare" >&2
+  }
+  /^_make_boot_on_iso9660() {/ {
+    a\    echo ">>> ENTER _make_boot_on_iso9660" >&2
+  }
+' /usr/sbin/mkarchiso > /tmp/mkarchiso-patched
 chmod +x /tmp/mkarchiso-patched
 
 echo "==> Running mkarchiso (with retry on network errors)..."
 for i in 1 2 3; do
     echo "--- Attempt $i ---"
-    if stdbuf -oL -eL /tmp/mkarchiso-patched -v -w "$BUILD_DIR" -o "$OUT_DIR" "$PROFILE_DIR" 2>&1; then
+    if bash -x /tmp/mkarchiso-patched -v -w "$BUILD_DIR" -o "$OUT_DIR" "$PROFILE_DIR" 2>&1; then
         echo "mkarchiso succeeded on attempt $i"
         break
     fi
