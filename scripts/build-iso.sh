@@ -599,6 +599,10 @@ echo "=== PoleLinux Customization Complete ==="
 CUSTOM
 chmod +x "$PROFILE_DIR/airootfs/root/customize_airootfs.sh"
 
+echo "==> Sanity check: testing _make_efibootimg logic in isolation..."
+/usr/bin/bash /home/builder/scripts/test_efibootimg.sh
+echo "Sanity check passed."
+
 echo "==> Patching mkarchiso for debugging..."
 # Copy original and remove set -e (but keep set -u) so we can see errors
 sed 's/^set -e -u$/set -ux/' /usr/sbin/mkarchiso > /tmp/mkarchiso-patched
