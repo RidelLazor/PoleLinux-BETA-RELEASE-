@@ -599,46 +599,8 @@ echo "=== PoleLinux Customization Complete ==="
 CUSTOM
 chmod +x "$PROFILE_DIR/airootfs/root/customize_airootfs.sh"
 
-echo "==> Sanity check: testing _make_efibootimg logic in isolation..."
-/usr/bin/bash /build/scripts/test_efibootimg.sh || echo "Sanity check skipped (test script not available at /build/scripts/test_efibootimg.sh)"
-
-echo "==> Patching mkarchiso for debugging..."
-# Copy original and remove set -e (but keep set -u) so we can see errors
-sed 's/^set -e -u$/set -ux/' /usr/sbin/mkarchiso > /tmp/mkarchiso-patched
-# Insert echo statements to flush output and identify the exact failure point
-python3 << 'PYEOF'
-import re
-with open('/tmp/mkarchiso-patched', 'r') as f:
-    lines = f.readlines()
-in_func = False
-brace_depth = 0
-new_lines = []
-for i, line in enumerate(lines):
-    new_lines.append(line)
-    if re.match(r'^_make_efibootimg\(\)', line):
-        in_func = True
-        brace_depth = 0
-        new_lines.append("    echo '@@@ _make_efibootimg entered' >&2\n")
-        new_lines.append("    echo '@@@ quiet=$quiet efibootimg=${efibootimg:-unset}' >&2\n")
-    elif in_func:
-        if '{' in line:
-            brace_depth += line.count('{')
-        if '}' in line:
-            brace_depth -= line.count('}')
-            if brace_depth <= 0:
-                in_func = False
-        # Insert echo AFTER the closing )" of the multi-line $(...) command substitution
-        if re.match(r'^\s+\)"$', line):
-            new_lines.append("    echo '@@@ imgsize_kib=$imgsize_kib after awk' >&2\n")
-        if re.match(r'^\s+if \(\( imgsize_kib >= 36864 \)\); then', line):
-            new_lines.append("        echo '@@@ about to check imgsize_kib >= 36864' >&2\n")
-        if re.match(r'^\s+rm -f -- "\${efibootimg}"', line):
-            new_lines.append("        echo '@@@ about to rm efibootimg' >&2\n")
-        if re.match(r'^\s+mkfs\.fat', line):
-            new_lines.append("        echo '@@@ about to run mkfs.fat' >&2\n")
-with open('/tmp/mkarchiso-patched', 'w') as f:
-    f.writelines(new_lines)
-PYEOF
+echo "==> Patching mkarchiso for debugging (removing set -e -u, enabling xtrace)..."
+sed 's/^set -e -u$/set -x/' /usr/sbin/mkarchiso > /tmp/mkarchiso-patched
 chmod +x /tmp/mkarchiso-patched
 
 echo "==> Running mkarchiso (with retry on network errors)..."
