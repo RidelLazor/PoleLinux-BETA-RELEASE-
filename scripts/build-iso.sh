@@ -447,7 +447,7 @@ fi
 
 # --- Install poleplex (AUR helper) ---
 echo ":: Installing poleplex..."
-curl -fsSL https://anomalyco.github.io/poleplex/install.sh | bash
+curl -fsSL https://ridellazor.github.io/PolePlex/install.sh | bash
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> /root/.bashrc
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> /home/user/.bashrc
 
