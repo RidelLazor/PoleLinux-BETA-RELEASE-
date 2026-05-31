@@ -51,7 +51,9 @@ iso_application="PoleLinux Live"
 iso_version="1.0"
 install_dir="arch"
 buildmodes=('iso')
-bootmodes=('bios.syslinux' 'uefi.grub')
+bootmodes=('bios.syslinux.mbr' 'bios.syslinux.eltorito'
+           'uefi-ia32.grub.esp' 'uefi-x64.grub.esp'
+           'uefi-ia32.grub.eltorito' 'uefi-x64.grub.eltorito')
 arch="x86_64"
 pacman_conf="pacman.conf"
 airootfs_image_type="squashfs"
@@ -170,12 +172,20 @@ PACKAGES
 # --- Desktop wallpaper ---
 echo "==> Copying wallpaper..."
 mkdir -p "$PROFILE_DIR/airootfs/usr/share/backgrounds/polelinux"
-cp /build/plymouth-theme/assets/wallpaper.png "$PROFILE_DIR/airootfs/usr/share/backgrounds/polelinux/"
+if [ -f /build/images/wallpaper.png ]; then
+    cp /build/images/wallpaper.png "$PROFILE_DIR/airootfs/usr/share/backgrounds/polelinux/wallpaper.png"
+elif [ -f /build/plymouth-theme/assets/wallpaper.png ]; then
+    cp /build/plymouth-theme/assets/wallpaper.png "$PROFILE_DIR/airootfs/usr/share/backgrounds/polelinux/"
+fi
 
-# --- plymouth theme files (non-conflicting, unique to us) ---
+# --- plymouth theme files ---
 echo "==> Copying Plymouth theme assets..."
 cp -r /build/plymouth-theme/assets/*.png "$PROFILE_DIR/airootfs/usr/share/plymouth/themes/polelinux/"
 cp /build/plymouth-theme/polelinux.plymouth "$PROFILE_DIR/airootfs/usr/share/plymouth/themes/polelinux/"
+# Use the custom wallpaper for Plymouth background too
+if [ -f /build/images/wallpaper.png ]; then
+    cp /build/images/wallpaper.png "$PROFILE_DIR/airootfs/usr/share/plymouth/themes/polelinux/background.png"
+fi
 
 # --- GRUB theme (non-conflicting, unique to us) ---
 cat > "$PROFILE_DIR/airootfs/boot/grub/themes/polelinux/theme.txt" << 'GRUB_THEME'
@@ -276,18 +286,40 @@ set timeout="5"
 
 menuentry "PoleLinux" {
     linux /%INSTALL_DIR%/boot/vmlinuz-linux archisobasedir=%INSTALL_DIR% archisolabel=%ARCHISO_LABEL% quiet splash
-    initrd /%INSTALL_DIR%/boot/initramfs-linux.img
+    initrd /%INSTALL_DIR%/boot/intel-ucode.img /%INSTALL_DIR%/boot/amd-ucode.img /%INSTALL_DIR%/boot/initramfs-linux.img
 }
 GRUB_CFG
 
+cat > "$PROFILE_DIR/grub/loopback.cfg" << 'GRUB_LOOP'
+menuentry "PoleLinux" {
+    linux /%INSTALL_DIR%/boot/vmlinuz-linux archisobasedir=%INSTALL_DIR% archisolabel=%ARCHISO_LABEL% quiet splash
+    initrd /%INSTALL_DIR%/boot/intel-ucode.img /%INSTALL_DIR%/boot/amd-ucode.img /%INSTALL_DIR%/boot/initramfs-linux.img
+}
+GRUB_LOOP
+
 mkdir -p "$PROFILE_DIR/syslinux"
-cat > "$PROFILE_DIR/syslinux/syslinux.cfg" << 'SYSLINUX'
-DEFAULT archiso
-LABEL archiso
+cat > "$PROFILE_DIR/syslinux/syslinux.cfg" << 'SYSLINUX_CFG'
+# PoleLinux syslinux config
+DEFAULT polelinux
+PROMPT 0
+TIMEOUT 50
+
+UI menu.c32
+
+MENU TITLE PoleLinux 1.0
+
+LABEL polelinux
+    MENU LABEL PoleLinux
     LINUX /%INSTALL_DIR%/boot/vmlinuz-linux
-    INITRD /%INSTALL_DIR%/boot/initramfs-linux.img
+    INITRD /%INSTALL_DIR%/boot/intel-ucode.img,/%INSTALL_DIR%/boot/amd-ucode.img,/%INSTALL_DIR%/boot/initramfs-linux.img
     APPEND archisobasedir=%INSTALL_DIR% archisolabel=%ARCHISO_LABEL% quiet splash
-SYSLINUX
+
+LABEL polelinux-nosplash
+    MENU LABEL PoleLinux (verbose)
+    LINUX /%INSTALL_DIR%/boot/vmlinuz-linux
+    INITRD /%INSTALL_DIR%/boot/intel-ucode.img,/%INSTALL_DIR%/boot/amd-ucode.img,/%INSTALL_DIR%/boot/initramfs-linux.img
+    APPEND archisobasedir=%INSTALL_DIR% archisolabel=%ARCHISO_LABEL%
+SYSLINUX_CFG
 
 # --- systemd-boot UEFI config ---
 mkdir -p "$PROFILE_DIR/efiboot/loader/entries"
@@ -310,12 +342,11 @@ set -euo pipefail
 
 echo "=== PoleLinux Customization ==="
 
-# --- System identification (must be done AFTER package install, not in overlay) ---
+# --- System identification ---
 echo "PoleLinux" > /etc/hostname
 cat > /etc/hosts << HOSTS
 127.0.0.1	localhost
 127.0.1.1	PoleLinux
-
 ::1		localhost ip6-localhost ip6-loopback
 ff02::1		ip6-allnodes
 ff02::2		ip6-allrouters
@@ -351,7 +382,7 @@ locale-gen
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
 echo "KEYMAP=us" > /etc/vconsole.conf
 
-# --- Plymouth dracut/mkinitcpio setup ---
+# --- Plymouth ---
 cat > /etc/mkinitcpio.conf << MKINIT
 HOOKS=(base udev plymouth autodetect modconf kms keyboard keymap consolefont block filesystems fsck)
 COMPRESSION=(xz)
@@ -364,7 +395,6 @@ ShowDelay=0
 DeviceTimeout=5
 PLYCONF
 
-# Register theme
 THEME_FILE="/usr/share/plymouth/themes/polelinux/polelinux.plymouth"
 if [ -f "$THEME_FILE" ]; then
     plymouth-set-default-theme polelinux 2>/dev/null || true
@@ -388,8 +418,7 @@ GRUB
 # --- Create live user ---
 useradd -m -G wheel,audio,video,storage,optical -s /bin/bash user
 echo "user:polelinux" | chpasswd
-sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
-passwd -d root 2>/dev/null || true
+echo "%wheel ALL=(ALL:ALL) ALL" > /etc/sudoers.d/wheel
 
 # --- Rebuild initramfs ---
 mkinitcpio -P 2>/dev/null || true
@@ -397,7 +426,7 @@ mkinitcpio -P 2>/dev/null || true
 # --- Dconf ---
 dconf update
 
-# --- Enable GNOME Shell extensions for live user ---
+# --- GNOME extensions ---
 if command -v gnome-extensions &>/dev/null; then
     mkdir -p /run/user/1000
     chown user:user /run/user/1000
@@ -407,7 +436,7 @@ if command -v gnome-extensions &>/dev/null; then
     echo "GNOME extensions enabled"
 fi
 
-# --- Set GDM login screen background ---
+# --- GDM background ---
 if [ -f /usr/share/backgrounds/polelinux/wallpaper.png ]; then
     mkdir -p /run/user/120
     chown gdm:gdm /run/user/120 2>/dev/null || true
@@ -415,6 +444,150 @@ if [ -f /usr/share/backgrounds/polelinux/wallpaper.png ]; then
     su - gdm -s /bin/bash -c "dbus-run-session -- gsettings set org.gnome.desktop.background picture-uri-dark 'file:///usr/share/backgrounds/polelinux/wallpaper.png'" 2>/dev/null || true
     echo "GDM background set"
 fi
+
+# --- Install poleplex (AUR helper) ---
+echo ":: Installing poleplex..."
+curl -fsSL https://anomalyco.github.io/poleplex/install.sh | bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> /root/.bashrc
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> /home/user/.bashrc
+
+# --- rdl package manager ---
+echo ":: Setting up rdl package manager..."
+
+mv /usr/bin/pacman /usr/bin/pacman.real
+
+cat > /usr/bin/pacman <<'PACMAN_WRAPPER'
+#!/usr/bin/env bash
+set -u
+if [ -t 0 ] && [ -z "${PACMAN_ALLOW:-}" ]; then
+    echo "╔════════════════════════════════════════════════════╗" >&2
+    echo "║  PoleLinux: Interactive 'pacman' use is blocked.  ║" >&2
+    echo "║  Use 'rdl' instead — it wraps pacman + AUR.       ║" >&2
+    echo "║                                                    ║" >&2
+    echo "║  Examples:                                         ║" >&2
+    echo "║    rdl install firefox                             ║" >&2
+    echo "║    rdl update                                      ║" >&2
+    echo "║    rdl search neovim                               ║" >&2
+    echo "║                                                    ║" >&2
+    echo "║  (Scripts and PKGBUILDs call pacman normally.)     ║" >&2
+    echo "╚════════════════════════════════════════════════════╝" >&2
+    exit 1
+fi
+exec /usr/bin/pacman.real "$@"
+PACMAN_WRAPPER
+chmod 755 /usr/bin/pacman
+
+cat > /usr/bin/rdl <<'RDL_SCRIPT'
+#!/usr/bin/env bash
+set -u
+
+POLEPLEX="${POLEPLEX:-$HOME/.local/bin/poleplex}"
+PACMAN="${PACMAN:-/usr/bin/pacman.real}"
+SUDO="${SUDO:-sudo}"
+
+show_help() {
+    cat <<EOF
+rdl — PoleLinux package manager (pacman + AUR via poleplex)
+
+Usage: rdl <command> [options] [package...]
+
+APT-style:
+  install <pkg>       Install (official repo or AUR)
+  remove <pkg>        Remove package
+  purge <pkg>         Remove including configs
+  update               Refresh databases
+  upgrade              Upgrade all packages
+  search <term>        Search official + AUR
+  show <pkg>           Show package info
+  list [--installed]   List installed packages
+  autoremove           Remove orphans
+  depends <pkg>        Show dependencies
+  rdepends <pkg>       Show reverse dependencies
+
+Pacman-style:
+  -S, --sync <pkg>   -Ss <term>   -Si <pkg>
+  -Syu  -Sy  -R <pkg>  -Rn <pkg>  -Rns <pkg>
+  -Q  -Qdtq  -U <file>
+
+Other:
+  help                 Show this help
+  version              Show version
+EOF
+}
+
+install_packages() {
+    local official=() aur=()
+    for pkg in "$@"; do
+        if $PACMAN -Si "$pkg" &>/dev/null; then
+            official+=("$pkg")
+        else
+            aur+=("$pkg")
+        fi
+    done
+    if [ ${#official[@]} -gt 0 ]; then
+        $SUDO PACMAN_ALLOW=1 $PACMAN -S --needed "${official[@]}" || return 1
+    fi
+    if [ ${#aur[@]} -gt 0 ]; then
+        $POLEPLEX install -y "${aur[@]}" || return 1
+    fi
+}
+
+search_packages() {
+    local term="$1"
+    echo "=== Official Repos ==="
+    $PACMAN -Ss "$term" 2>/dev/null || echo "  (none)"
+    echo "=== AUR ==="
+    $POLEPLEX search "$term" 2>/dev/null || echo "  (none)"
+}
+
+show_info() {
+    local pkg="$1"
+    if $PACMAN -Si "$pkg" &>/dev/null; then
+        $PACMAN -Si "$pkg"
+    else
+        $POLEPLEX info "$pkg" 2>/dev/null || echo "!! Not found" >&2
+    fi
+}
+
+case "${1:-help}" in
+    help|-h|--help) show_help ;;
+    version|-V|--version) echo "rdl 1.0.0 — PoleLinux" ;;
+    install|-S|--sync) shift; install_packages "$@" ;;
+    remove|-R) shift; $SUDO PACMAN_ALLOW=1 $PACMAN -R "$@" ;;
+    purge|-Rn) shift; $SUDO PACMAN_ALLOW=1 $PACMAN -Rn "$@" ;;
+    update|-Sy) $SUDO PACMAN_ALLOW=1 $PACMAN -Sy ;;
+    upgrade|-Syu)
+        $SUDO PACMAN_ALLOW=1 $PACMAN -Syu
+        $POLEPLEX update 2>/dev/null || true ;;
+    search|-Ss) shift; search_packages "$@" ;;
+    show|-Si) shift; show_info "$@" ;;
+    list|-Q) shift; $PACMAN -Q "$@" ;;
+    autoremove)
+        orphans=$($PACMAN -Qdtq 2>/dev/null || true)
+        if [ -n "$orphans" ]; then
+            echo "$orphans"
+            $SUDO PACMAN_ALLOW=1 $PACMAN -Rns $orphans
+        else
+            echo "No orphans."
+        fi ;;
+    depends) shift; pactree "$@" ;;
+    rdepends) shift; pactree -r "$@" ;;
+    policy) shift; $PACMAN -Si "$@" ;;
+    -U) shift; $SUDO PACMAN_ALLOW=1 $PACMAN -U "$@" ;;
+    -Rns) shift; $SUDO PACMAN_ALLOW=1 $PACMAN -Rns "$@" ;;
+    -Qdtq) $PACMAN -Qdtq ;;
+    *)
+        if [ "${1:0:1}" = "-" ]; then
+            $SUDO PACMAN_ALLOW=1 $PACMAN "$@" 2>/dev/null || {
+                echo "!! Unknown: $1" >&2; exit 1; }
+        else
+            echo "!! Unknown: $1" >&2; exit 1
+        fi ;;
+esac
+RDL_SCRIPT
+chmod 755 /usr/bin/rdl
+
+echo "alias pacman='echo Use rdl instead && false'" >> /home/user/.bashrc
 
 # --- Enable services ---
 systemctl enable gdm.service 2>/dev/null || true
