@@ -304,15 +304,15 @@ set default="0"
 set timeout="5"
 
 menuentry "PoleLinux" {
-    linux /%INSTALL_DIR%/boot/vmlinuz-linux archisobasedir=%INSTALL_DIR% archisolabel=%ARCHISO_LABEL% quiet splash
-    initrd /%INSTALL_DIR%/boot/intel-ucode.img /%INSTALL_DIR%/boot/amd-ucode.img /%INSTALL_DIR%/boot/initramfs-linux.img
+    linux /%INSTALL_DIR%/boot/%ARCH%/vmlinuz-linux archisobasedir=%INSTALL_DIR% archisolabel=%ARCHISO_LABEL% quiet splash
+    initrd /%INSTALL_DIR%/boot/intel-ucode.img /%INSTALL_DIR%/boot/amd-ucode.img /%INSTALL_DIR%/boot/%ARCH%/initramfs-linux.img
 }
 GRUB_CFG
 
 cat > "$PROFILE_DIR/grub/loopback.cfg" << 'GRUB_LOOP'
 menuentry "PoleLinux" {
-    linux /%INSTALL_DIR%/boot/vmlinuz-linux archisobasedir=%INSTALL_DIR% archisolabel=%ARCHISO_LABEL% quiet splash
-    initrd /%INSTALL_DIR%/boot/intel-ucode.img /%INSTALL_DIR%/boot/amd-ucode.img /%INSTALL_DIR%/boot/initramfs-linux.img
+    linux /%INSTALL_DIR%/boot/%ARCH%/vmlinuz-linux archisobasedir=%INSTALL_DIR% archisolabel=%ARCHISO_LABEL% quiet splash
+    initrd /%INSTALL_DIR%/boot/intel-ucode.img /%INSTALL_DIR%/boot/amd-ucode.img /%INSTALL_DIR%/boot/%ARCH%/initramfs-linux.img
 }
 GRUB_LOOP
 
@@ -329,14 +329,14 @@ MENU TITLE PoleLinux 1.0
 
 LABEL polelinux
     MENU LABEL PoleLinux
-    LINUX /%INSTALL_DIR%/boot/vmlinuz-linux
-    INITRD /%INSTALL_DIR%/boot/intel-ucode.img,/%INSTALL_DIR%/boot/amd-ucode.img,/%INSTALL_DIR%/boot/initramfs-linux.img
+    LINUX /%INSTALL_DIR%/boot/%ARCH%/vmlinuz-linux
+    INITRD /%INSTALL_DIR%/boot/intel-ucode.img,/%INSTALL_DIR%/boot/amd-ucode.img,/%INSTALL_DIR%/boot/%ARCH%/initramfs-linux.img
     APPEND archisobasedir=%INSTALL_DIR% archisolabel=%ARCHISO_LABEL% quiet splash
 
 LABEL polelinux-nosplash
     MENU LABEL PoleLinux (verbose)
-    LINUX /%INSTALL_DIR%/boot/vmlinuz-linux
-    INITRD /%INSTALL_DIR%/boot/intel-ucode.img,/%INSTALL_DIR%/boot/amd-ucode.img,/%INSTALL_DIR%/boot/initramfs-linux.img
+    LINUX /%INSTALL_DIR%/boot/%ARCH%/vmlinuz-linux
+    INITRD /%INSTALL_DIR%/boot/intel-ucode.img,/%INSTALL_DIR%/boot/amd-ucode.img,/%INSTALL_DIR%/boot/%ARCH%/initramfs-linux.img
     APPEND archisobasedir=%INSTALL_DIR% archisolabel=%ARCHISO_LABEL%
 SYSLINUX_CFG
 
@@ -349,10 +349,10 @@ console-mode keep
 SYSD_LOADER
 cat > "$PROFILE_DIR/efiboot/loader/entries/archiso-x86_64.conf" << 'SYSD_ENTRY'
 title PoleLinux
-linux /%INSTALL_DIR%/boot/vmlinuz-linux
+linux /%INSTALL_DIR%/boot/%ARCH%/vmlinuz-linux
 initrd /%INSTALL_DIR%/boot/intel-ucode.img
 initrd /%INSTALL_DIR%/boot/amd-ucode.img
-initrd /%INSTALL_DIR%/boot/initramfs-linux.img
+initrd /%INSTALL_DIR%/boot/%ARCH%/initramfs-linux.img
 options archisobasedir=%INSTALL_DIR% archisolabel=%ARCHISO_LABEL% quiet splash
 SYSD_ENTRY
 
