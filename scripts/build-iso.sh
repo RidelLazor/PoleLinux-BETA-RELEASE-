@@ -51,7 +51,7 @@ iso_application="PoleLinux Live"
 iso_version="1.0"
 install_dir="arch"
 buildmodes=('iso')
-bootmodes=('bios.syslinux' 'uefi.grub')
+bootmodes=('bios.syslinux' 'uefi-x64.systemd-boot')
 arch="x86_64"
 pacman_conf="pacman.conf"
 airootfs_image_type="squashfs"
@@ -330,6 +330,8 @@ SYSD_LOADER
 cat > "$PROFILE_DIR/efiboot/loader/entries/archiso-x86_64.conf" << 'SYSD_ENTRY'
 title PoleLinux
 linux /%INSTALL_DIR%/boot/vmlinuz-linux
+initrd /%INSTALL_DIR%/boot/intel-ucode.img
+initrd /%INSTALL_DIR%/boot/amd-ucode.img
 initrd /%INSTALL_DIR%/boot/initramfs-linux.img
 options archisobasedir=%INSTALL_DIR% archisolabel=%ARCHISO_LABEL% quiet splash
 SYSD_ENTRY
