@@ -35,6 +35,8 @@ echo "==> Creating archiso profile..."
 # Non-conflicting overlay directories (packages won't install these paths)
 mkdir -p "$PROFILE_DIR/airootfs/etc/dconf/db/local.d/locks"
 mkdir -p "$PROFILE_DIR/airootfs/etc/gdm"
+mkdir -p "$PROFILE_DIR/airootfs/etc/mkinitcpio.conf.d"
+mkdir -p "$PROFILE_DIR/airootfs/etc/mkinitcpio.d"
 mkdir -p "$PROFILE_DIR/airootfs/usr/share/plymouth/themes/polelinux"
 mkdir -p "$PROFILE_DIR/airootfs/boot/grub/themes/polelinux"
 mkdir -p "$PROFILE_DIR/airootfs/root"
@@ -65,6 +67,23 @@ file_permissions=(
 )
 PROF
 chmod +x "$PROFILE_DIR/profiledef.sh"
+
+# --- mkinitcpio archiso config (for live ISO boot) ---
+cat > "$PROFILE_DIR/airootfs/etc/mkinitcpio.conf.d/archiso.conf" << 'ARCHISO_MKINIT'
+HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block filesystems fsck archiso archiso_loop_mnt archiso_shutdown)
+COMPRESSION=(xz)
+ARCHISO_MKINIT
+
+cat > "$PROFILE_DIR/airootfs/etc/mkinitcpio.d/linux.preset" << 'ARCHISO_PRESET'
+# mkinitcpio preset file for the 'linux' package on archiso
+
+PRESETS=('archiso')
+
+ALL_kver='/boot/vmlinuz-linux'
+archiso_config='/etc/mkinitcpio.conf.d/archiso.conf'
+
+archiso_image="/boot/initramfs-linux.img"
+ARCHISO_PRESET
 
 # --- pacman.conf (enable multilib, disable timeouts, more mirrors via local file) ---
 cat > "$PROFILE_DIR/pacman.conf" << 'PACMAN'
@@ -152,8 +171,9 @@ baobab
 seahorse
 loupe
 
-# Plymouth boot splash
+# Plymouth boot splash + archiso live hooks
 plymouth
+mkinitcpio-archiso
 
 # GNOME Shell extensions
 gnome-shell-extensions
@@ -389,6 +409,18 @@ HOOKS=(base udev plymouth autodetect modconf kms keyboard keymap consolefont blo
 COMPRESSION=(xz)
 MKINIT
 
+# Remove archiso live config and restore default preset for installed system
+rm -f /etc/mkinitcpio.conf.d/archiso.conf
+cat > /etc/mkinitcpio.d/linux.preset << 'DFLT_PRESET'
+# mkinitcpio preset file for the 'linux' package
+
+ALL_config='/etc/mkinitcpio.conf'
+ALL_kver='/boot/vmlinuz-linux'
+
+PRESETS=('default')
+default_image='/boot/initramfs-linux.img'
+DFLT_PRESET
+
 cat > /etc/plymouth/plymouthd.conf << PLYCONF
 [Daemon]
 Theme=polelinux
@@ -600,7 +632,7 @@ CUSTOM
 chmod +x "$PROFILE_DIR/airootfs/root/customize_airootfs.sh"
 
 echo "==> Patching mkarchiso to disable errexit and nounset..."
-sed 's/^set -[a-z].*/set +e +u/' /usr/sbin/mkarchiso > /tmp/mkarchiso-patched
+sed 's/^set -[a-z].*/set +e +u/' /usr/sbin/mkarchiso | tee /tmp/mkarchiso-patched > /dev/null
 chmod +x /tmp/mkarchiso-patched
 
 echo "==> Patching profiledef.sh to not re-enable errexit..."

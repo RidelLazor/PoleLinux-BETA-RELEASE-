@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PoleLinux OS</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap');
+
+:root {
+  --primary: #64b5f6;
+  --primary-dim: rgba(100, 180, 255, 0.15);
+  --accent: #90caf9;
+  --bg: #0a0a12;
+  --surface: rgba(18, 18, 30, 0.8);
+  --surface-border: rgba(100, 180, 255, 0.08);
+  --text: #e8eaf0;
+  --text-muted: rgba(232, 234, 240, 0.5);
+  --radius: 16px;
+  --transition: 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ───── Canvas BG ───── */
+#particles {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ───── Navigation ───── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 0 2rem;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  background: rgba(10, 10, 18, 0.6);
+  border-bottom: 1px solid var(--surface-border);
+  transition: var(--transition);
+}
+nav.scrolled {
+  background: rgba(10, 10, 18, 0.92);
+  box-shadow: 0 1px 30px rgba(0,0,0,0.4);
+}
+nav .logo {
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--primary), #e8eaf0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+nav .nav-links { display: flex; gap: 2rem; align-items: center; }
+nav .nav-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.3s;
+  position: relative;
+}
+nav .nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px; left: 0;
+  width: 0; height: 2px;
+  background: var(--primary);
+  transition: width 0.3s;
+  border-radius: 1px;
+}
+nav .nav-links a:hover { color: var(--text); }
+nav .nav-links a:hover::after { width: 100%; }
+
+/* ───── Sections ───── */
+section {
+  position: relative;
+  z-index: 1;
+  padding: 6rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ───── Hero ───── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-top: 80px;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1.2rem;
+  border-radius: 100px;
+  background: var(--primary-dim);
+  border: 1px solid rgba(100, 180, 255, 0.2);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--primary);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+  animation: fadeSlideUp 1s ease both;
+}
+.hero-badge .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #4caf50;
+  animation: pulse 2s ease infinite;
+}
+.hero h1 {
+  font-size: clamp(3rem, 10vw, 7rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-bottom: 1.5rem;
+  animation: fadeSlideUp 1s 0.15s ease both;
+}
+.hero h1 .gradient {
+  background: linear-gradient(135deg, var(--primary) 0%, #e8eaf0 50%, var(--primary) 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 6s ease infinite;
+}
+.hero p {
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  color: var(--text-muted);
+  max-width: 600px;
+  margin-bottom: 2.5rem;
+  animation: fadeSlideUp 1s 0.3s ease both;
+}
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  animation: fadeSlideUp 1s 0.45s ease both;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.9rem 2rem;
+  border-radius: 100px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: var(--transition);
+  cursor: pointer;
+  border: none;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), #42a5f5);
+  color: #0a0a12;
+  box-shadow: 0 4px 30px rgba(100, 180, 255, 0.25);
+}
+.btn-primary:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 8px 40px rgba(100, 180, 255, 0.4);
+}
+.btn-secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--surface-border);
+}
+.btn-secondary:hover {
+  background: var(--surface);
+  border-color: rgba(100, 180, 255, 0.3);
+  transform: translateY(-2px);
+}
+.hero-logo {
+  width: 120px;
+  height: auto;
+  margin-bottom: 1.5rem;
+  animation: fadeSlideUp 1s ease both;
+  filter: drop-shadow(0 0 30px rgba(100, 180, 255, 0.3));
+}
+.hero-stats {
+  display: flex;
+  gap: 3rem;
+  margin-top: 4rem;
+  animation: fadeSlideUp 1s 0.6s ease both;
+}
+.hero-stats .stat { text-align: center; }
+.hero-stats .stat .num {
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-stats .stat .label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+/* ───── Scroll indicator ───── */
+.scroll-indicator {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  animation: fadeSlideUp 1s 0.8s ease both;
+}
+.scroll-indicator .mouse {
+  width: 24px; height: 38px;
+  border: 2px solid var(--text-muted);
+  border-radius: 12px;
+  position: relative;
+}
+.scroll-indicator .mouse::after {
+  content: '';
+  position: absolute;
+  top: 6px; left: 50%;
+  transform: translateX(-50%);
+  width: 3px; height: 8px;
+  border-radius: 2px;
+  background: var(--primary);
+  animation: scrollWheel 2s ease infinite;
+}
+
+/* ───── Download CTA ───── */
+.cta {
+  text-align: center;
+  padding: 8rem 2rem;
+}
+.cta h2 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 1rem;
+}
+.cta p {
+  color: var(--text-muted);
+  max-width: 500px;
+  margin: 0 auto 2.5rem;
+}
+.version-tag {
+  display: inline-block;
+  padding: 0.25rem 0.8rem;
+  border-radius: 6px;
+  background: var(--primary-dim);
+  border: 1px solid rgba(100, 180, 255, 0.15);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 2rem;
+}
+
+/* ───── Footer ───── */
+footer {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 3rem 2rem;
+  border-top: 1px solid var(--surface-border);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+footer a { color: var(--primary); text-decoration: none; }
+
+/* ───── Animations ───── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+@keyframes scrollWheel {
+  0% { transform: translateX(-50%) translateY(0); opacity: 1; }
+  100% { transform: translateX(-50%) translateY(16px); opacity: 0; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* ───── Responsive ───── */
+@media (max-width: 768px) {
+  section { padding: 4rem 1.25rem; }
+  nav { padding: 0 1.25rem; }
+  nav .nav-links { gap: 1rem; }
+  nav .nav-links a { font-size: 0.8rem; }
+  .hero-stats { gap: 1.5rem; flex-wrap: wrap; }
+}
+  
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<!-- Navigation -->
+<nav id="navbar">
+  <span class="logo">PoleLinux</span>
+  <div class="nav-links">
+    <a href="#download">Download</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <img src="logo.png" alt="PoleLinux" class="hero-logo">
+  <div class="hero-badge"><span class="dot"></span> v1.0 PoleStar</div>
+  <h1><span class="gradient">PoleLinux</span></h1>
+  <p>An Arch-based Linux distribution built for speed, simplicity, and visual polish. GNOME desktop, Plymouth boot splash, and zero bloat.</p>
+  <div class="hero-actions">
+    <a href="#download" class="btn btn-primary">&#8595; Download ISO</a>
+    <a href="https://github.com/RidelLazor/PoleLinux-BETA-RELEASE-" target="_blank" class="btn btn-secondary">GitHub &rarr;</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="num">1.0</div><div class="label">Version</div></div>
+    <div class="stat"><div class="num">Arch</div><div class="label">Base</div></div>
+    <div class="stat"><div class="num">GNOME</div><div class="label">Desktop</div></div>
+  </div>
+  <div class="scroll-indicator">
+    <div class="mouse"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- Download CTA -->
+<section id="download" class="cta">
+  <div class="version-tag">v1.0 "PoleStar"</div>
+  <h2>Ready to try PoleLinux?</h2>
+  <p>Download the ISO, write it to a USB drive, and boot into the live environment. No installation required.</p>
+  <div class="hero-actions">
+    <a href="#" class="btn btn-primary" onclick="alert('ISO build available from GitHub Actions — download the latest artifact from the repository.')">&#8595; Download ISO</a>
+    <a href="https://github.com/RidelLazor/PoleLinux-BETA-RELEASE-" target="_blank" class="btn btn-secondary">GitHub &rarr;</a>
+  </div>
+</section>
+
+<footer>
+  <p>&copy; 2026 PoleLinux. Built on <a href="https://archlinux.org" target="_blank">Arch Linux</a>.</p>
+</footer>
+
+<script>
+// ── Particle canvas ──
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let particles = [];
+let mouse = { x: -999, y: -999 };
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+document.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+document.addEventListener('mouseleave', () => { mouse.x = -999; mouse.y = -999; });
+
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.size = Math.random() * 2 + 0.5;
+    this.speedX = (Math.random() - 0.5) * 0.4;
+    this.speedY = (Math.random() - 0.5) * 0.4;
+    this.opacity = Math.random() * 0.6 + 0.15;
+    this.hue = 210 + Math.random() * 20;
+  }
+  update() {
+    this.x += this.speedX;
+    this.y += this.speedY;
+    if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+    if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+    const dx = mouse.x - this.x;
+    const dy = mouse.y - this.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < 200) {
+      const force = (200 - dist) / 200 * 0.5;
+      this.x -= dx / dist * force;
+      this.y -= dy / dist * force;
+    }
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = `hsla(${this.hue}, 70%, 70%, ${this.opacity})`;
+    ctx.fill();
+  }
+}
+
+const count = Math.min(120, Math.floor(canvas.width * canvas.height / 8000));
+for (let i = 0; i < count; i++) particles.push(new Particle());
+
+let connectionDist = 150;
+
+function drawConnections() {
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < connectionDist) {
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.strokeStyle = `hsla(210, 60%, 60%, ${(1 - dist / connectionDist) * 0.15})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    }
+  }
+}
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => { p.update(); p.draw(); });
+  drawConnections();
+  requestAnimationFrame(animate);
+}
+animate();
+
+// ── Scroll-triggered reveal ──
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+// No scroll-reveal items currently
+
+// ── Navbar scroll effect ──
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('scrolled', window.scrollY > 40);
+});
+</script>
+</body>
+</html>
