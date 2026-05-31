@@ -627,7 +627,8 @@ for i, line in enumerate(lines):
             brace_depth -= line.count('}')
             if brace_depth <= 0:
                 in_func = False
-        if 'imgsize_kib="$(' in line:
+        # Insert echo AFTER the closing )" of the multi-line $(...) command substitution
+        if re.match(r'^\s+\)"$', line):
             new_lines.append("    echo '@@@ imgsize_kib=$imgsize_kib after awk' >&2\n")
         if re.match(r'^\s+if \(\( imgsize_kib >= 36864 \)\); then', line):
             new_lines.append("        echo '@@@ about to check imgsize_kib >= 36864' >&2\n")
