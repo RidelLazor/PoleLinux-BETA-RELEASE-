@@ -599,8 +599,8 @@ echo "=== PoleLinux Customization Complete ==="
 CUSTOM
 chmod +x "$PROFILE_DIR/airootfs/root/customize_airootfs.sh"
 
-echo "==> Patching mkarchiso (removing set -e for debugging)..."
-sed 's/^set -e -u$/set -u/' /usr/sbin/mkarchiso > /tmp/mkarchiso-patched
+echo "==> Patching mkarchiso (removing set -e, adding xtrace for debugging)..."
+sed 's/^set -e -u$/set -ux/' /usr/sbin/mkarchiso > /tmp/mkarchiso-patched
 chmod +x /tmp/mkarchiso-patched
 
 echo "==> Running mkarchiso (with retry on network errors)..."
