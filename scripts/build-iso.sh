@@ -599,14 +599,54 @@ echo "=== PoleLinux Customization Complete ==="
 CUSTOM
 chmod +x "$PROFILE_DIR/airootfs/root/customize_airootfs.sh"
 
-echo "==> Patching mkarchiso (removing set -e, adding xtrace for debugging)..."
+echo "==> Patching mkarchiso for debugging..."
+# Copy original and remove set -e (but keep set -u) so we can see errors
 sed 's/^set -e -u$/set -ux/' /usr/sbin/mkarchiso > /tmp/mkarchiso-patched
+# Insert echo statements to flush output and identify the exact failure point
+python3 -c "
+import re
+with open('/tmp/mkarchiso-patched', 'r') as f:
+    lines = f.readlines()
+# Find _make_efibootimg function and add debug echos
+in_func = False
+brace_depth = 0
+new_lines = []
+for i, line in enumerate(lines):
+    new_lines.append(line)
+    if re.match(r'^_make_efibootimg\(\)', line):
+        in_func = True
+        brace_depth = 0
+        new_lines.append('    echo \"@@@ _make_efibootimg entered\" >&2\n')
+        new_lines.append('    echo \"@@@ quiet=\$quiet efibootimg=\${efibootimg:-unset}\" >&2\n')
+    elif in_func:
+        if '{' in line:
+            brace_depth += line.count('{')
+        if '}' in line:
+            brace_depth -= line.count('}')
+            if brace_depth <= 0:
+                in_func = False
+        # After the awk/imgsize_kib assignment line, add a debug echo
+        # Check for: imgsize_kib="$(
+        if 'imgsize_kib="$(' in line:
+            new_lines.append('    echo \"@@@ imgsize_kib=\$imgsize_kib after awk\" >&2\n')
+        # Before (( imgsize_kib >= 36864 )) check, add debug
+        if re.match(r'^\s+if \(\( imgsize_kib >= 36864 \)\); then', line):
+            new_lines.append('        echo \"@@@ about to check imgsize_kib >= 36864\" >&2\n')
+        # Before rm -f efibootimg
+        if re.match(r'^\s+rm -f -- \"\${efibootimg}\"', line):
+            new_lines.append('        echo \"@@@ about to rm efibootimg\" >&2\n')
+        # Before mkfs.fat
+        if re.match(r'^\s+mkfs\.fat', line):
+            new_lines.append('        echo \"@@@ about to run mkfs.fat\" >&2\n')
+with open('/tmp/mkarchiso-patched', 'w') as f:
+    f.writelines(new_lines)
+"
 chmod +x /tmp/mkarchiso-patched
 
 echo "==> Running mkarchiso (with retry on network errors)..."
 for i in 1 2 3; do
     echo "--- Attempt $i ---"
-    if /tmp/mkarchiso-patched -v -w "$BUILD_DIR" -o "$OUT_DIR" "$PROFILE_DIR" 2>&1; then
+    if stdbuf -oL -eL /tmp/mkarchiso-patched -v -w "$BUILD_DIR" -o "$OUT_DIR" "$PROFILE_DIR" 2>&1; then
         echo "mkarchiso succeeded on attempt $i"
         break
     fi
