@@ -600,7 +600,7 @@ CUSTOM
 chmod +x "$PROFILE_DIR/airootfs/root/customize_airootfs.sh"
 
 echo "==> Patching mkarchiso for debugging (removing set -e -u, enabling xtrace)..."
-sed 's/^set -e -u$/set -x/' /usr/sbin/mkarchiso > /tmp/mkarchiso-patched
+sed 's/^set -euo pipefail$/set -x/' /usr/sbin/mkarchiso > /tmp/mkarchiso-patched
 chmod +x /tmp/mkarchiso-patched
 
 echo "==> Running mkarchiso (with retry on network errors)..."
