@@ -167,6 +167,7 @@ gnome-shell-extension-dash-to-panel
 sudo
 nano
 htop
+git
 PACKAGES
 
 # --- Desktop wallpaper ---
