@@ -34,13 +34,8 @@ LB_CONFIG_OPTS=(
   --iso-application "PoleLinux Live"
   --linux-flavours "amd64"
   --memtest none
-  --systemd-default
   --hdd-label "POLELINUX"
-  --apt-recommends true
-  --apt-secure true
   --binary-images iso-hybrid
-  --bootoptions "quiet splash"
-  --grub-theme ""
 )
 
 lb config "${LB_CONFIG_OPTS[@]}" 2>&1 | grep -v "^$" | sed 's/^/  /'
