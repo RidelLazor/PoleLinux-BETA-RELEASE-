@@ -53,7 +53,6 @@ file-roller
 gnome-tweaks
 gnome-software
 seahorse
-loupe
 baobab
 network-manager
 network-manager-gnome
