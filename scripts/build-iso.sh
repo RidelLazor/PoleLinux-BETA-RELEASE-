@@ -88,6 +88,17 @@ cp /build/plymouth-theme/polelinux.script config/includes.chroot/usr/share/plymo
 mkdir -p config/includes.chroot/usr/share/backgrounds/polelinux
 cp /build/images/wallpaper.png config/includes.chroot/usr/share/backgrounds/polelinux/
 
+# --- GSettings default wallpaper (applies to all users) ---
+mkdir -p config/includes.chroot/usr/share/glib-2.0/schemas/
+cat > config/includes.chroot/usr/share/glib-2.0/schemas/99_polelinux.gschema.override << 'GOVERRIDE'
+[org.gnome.desktop.background]
+picture-uri = 'file:///usr/share/backgrounds/polelinux/wallpaper.png'
+picture-uri-dark = 'file:///usr/share/backgrounds/polelinux/wallpaper.png'
+picture-options = 'zoom'
+[org.gnome.desktop.screensaver]
+picture-uri = 'file:///usr/share/backgrounds/polelinux/wallpaper.png'
+GOVERRIDE
+
 # --- GRUB theme ---
 mkdir -p config/includes.chroot/boot/grub/themes/polelinux
 cat > config/includes.chroot/boot/grub/themes/polelinux/theme.txt << 'GRUB_THEME'
@@ -207,15 +218,8 @@ echo "%sudo ALL=(ALL:ALL) ALL" > /etc/sudoers.d/wheel
 # Set Plymouth theme
 plymouth-set-default-theme polelinux || true
 
-# Set GNOME wallpaper for the live user
-su -c "gsettings set org.gnome.desktop.background picture-uri file:///usr/share/backgrounds/polelinux/wallpaper.png" user 2>/dev/null || true
-su -c "gsettings set org.gnome.desktop.background picture-uri-dark file:///usr/share/backgrounds/polelinux/wallpaper.png" user 2>/dev/null || true
-su -c "gsettings set org.gnome.desktop.background picture-options zoom" user 2>/dev/null || true
-
-# Set GNOME wallpaper for gdm (greeter)
-if [ -d /var/lib/gdm3 ]; then
-  cp /usr/share/backgrounds/polelinux/wallpaper.png /usr/share/backgrounds/polelinux/gdm-wallpaper.png
-fi
+# Compile GSettings schemas (sets default wallpaper for all users)
+glib-compile-schemas /usr/share/glib-2.0/schemas/ || true
 
 # Enable services
 systemctl enable gdm3 network-manager pipewire pipewire-pulse wireplumber || true
