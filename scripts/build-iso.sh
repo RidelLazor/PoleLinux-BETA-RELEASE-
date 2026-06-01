@@ -67,6 +67,7 @@ sudo
 nano
 htop
 git
+neofetch
 plymouth
 plymouth-themes
 PKGS
@@ -98,6 +99,15 @@ picture-options = 'zoom'
 [org.gnome.desktop.screensaver]
 picture-uri = 'file:///usr/share/backgrounds/polelinux/wallpaper.png'
 GOVERRIDE
+
+# # --- Neofetch ASCII logo & config ---
+mkdir -p config/includes.chroot/usr/share/polelinux
+cp /build/plymouth-theme/logo-ascii.txt config/includes.chroot/usr/share/polelinux/
+mkdir -p config/includes.chroot/etc/skel/.config/neofetch
+cat > config/includes.chroot/etc/skel/.config/neofetch/config.conf << 'NEOFETCH'
+ascii_file="/usr/share/polelinux/logo-ascii.txt"
+ascii_colors=(6 7)
+NEOFETCH
 
 # --- GRUB theme ---
 mkdir -p config/includes.chroot/boot/grub/themes/polelinux

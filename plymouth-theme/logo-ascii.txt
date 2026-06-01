@@ -1,0 +1,31 @@
+PPPPPPPPPPPPPPPP
+P::::::::::::::PP
+P::::PPPPPP:::::P
+P::::P      P::::P
+P::::P      P::::P
+P::::PPPPPP:::::P
+P:::::::::::::PP
+P::::PPPPPPPPP
+P::::P
+P::::P
+P::::P
+P::::P
+PPPPPP
+
+PPPPPPPPPP    OOOOOOOOO     LL          EEEEEEEEEEEE
+PP      PPP  OOO     OOO    LL          EE
+PP      PPP OOO       OOO   LL          EE
+PPPPPPPPPP  OOO       OOO   LL          EEEEEEE
+PP          OOO       OOO   LL          EE
+PP           OOO     OOO    LL          EE
+PP            OOOOOOOOO     LLLLLLLLLL  EEEEEEEEEEEE
+
+LL          IIIIIIII  NN      NN  UU      UU  XX      XX
+LL            IIII    NNN     NN  UU      UU   XX    XX
+LL            IIII    NN NN   NN  UU      UU    XX  XX
+LL            IIII    NN  NN  NN  UU      UU     XXXX
+LL            IIII    NN   NN NN  UU      UU     XXXX
+LL            IIII    NN    NNNN   UU    UU     XX  XX
+LLLLLLLLLL  IIIIIIII  NN      NN    UUUUUU     XX    XX
+
+    1.0  --  Powered by Debian
