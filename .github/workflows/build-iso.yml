@@ -42,5 +42,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: polelinux-iso
-          path: images/*.iso
+          path: build-env/out/*.iso
           retention-days: 30
