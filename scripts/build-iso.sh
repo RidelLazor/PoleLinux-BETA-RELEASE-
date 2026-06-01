@@ -200,7 +200,7 @@ set -e
 locale-gen
 
 # Create live user
-useradd -m -G sudo,audio,video,storage,optical -s /bin/bash user
+useradd -m -G sudo,audio,video -s /bin/bash user
 echo "user:polelinux" | chpasswd
 echo "%sudo ALL=(ALL:ALL) ALL" > /etc/sudoers.d/wheel
 
