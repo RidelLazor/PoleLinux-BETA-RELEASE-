@@ -15,7 +15,7 @@ for (i = 0; i < FRAMES; i++) {
     spinner[i].sprite = Sprite(spinner[i]);
 }
 
-/* Full-screen background sprite (solid dark purple) */
+/* Full-screen background sprite */
 bg_img  = Image("background.png");
 bg_spr  = Sprite(bg_img);
 
@@ -28,11 +28,13 @@ fg_orig    = Image("throbber-fg.png");
 screen_w = Window.GetWidth();
 screen_h = Window.GetHeight();
 
-spinner_x = (screen_w - 200) / 2;
-spinner_y = (screen_h - 200) / 2 - 40;
+spinner_w = 220;
+spinner_h = 220;
+spinner_x = (screen_w - spinner_w) / 2;
+spinner_y = (screen_h - spinner_h) / 2 - 40;
 
 bar_x = (screen_w - BAR_W) / 2;
-bar_y = spinner_y + 200 + 30;
+bar_y = spinner_y + spinner_h + 30;
 
 /* Position sprites */
 bg_spr.SetPosition(0, 0, 0);
@@ -52,8 +54,8 @@ spinner[0].sprite.SetVisible(true);
 last_tick = Plymouth.GetTime();
 
 /* Always set background so it persists across frames */
-Window.SetBackgroundTopColor(0.078, 0.078, 0.118);
-Window.SetBackgroundBottomColor(0.078, 0.078, 0.118);
+Window.SetBackgroundTopColor(0.039, 0.039, 0.071);
+Window.SetBackgroundBottomColor(0.039, 0.039, 0.071);
 
 fun refresh_callback ()
 {
