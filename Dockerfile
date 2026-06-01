@@ -1,14 +1,13 @@
-FROM archlinux:latest
+FROM debian:bookworm-slim
 
-RUN for i in 1 2 3; do pacman -Sy --noconfirm && break; done && \
-    pacman -S --noconfirm \
-        archiso \
-        grub \
-        python \
-        python-pillow \
-        dosfstools \
-        mtools \
-        && \
-    pacman -Syu --noconfirm
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    live-build \
+    debootstrap \
+    python3-pil \
+    python3 \
+    curl \
+    ca-certificates \
+    systemd-container \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
