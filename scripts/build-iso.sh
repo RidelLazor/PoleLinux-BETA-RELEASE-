@@ -26,7 +26,7 @@ LB_CONFIG_OPTS=(
   --distribution bookworm
   --architectures amd64
   --archive-areas "main contrib non-free non-free-firmware"
-  --bootappend-live "boot=live components quiet splash"
+  --bootappend-live "boot=live components quiet splash noresume loglevel=3 udev.log_level=3"
   --bootappend-install ""
   --debian-installer none
   --iso-volume "PoleLinux"
@@ -36,6 +36,7 @@ LB_CONFIG_OPTS=(
   --memtest none
   --hdd-label "POLELINUX"
   --binary-images iso-hybrid
+  --compression zstd
 )
 
 lb config "${LB_CONFIG_OPTS[@]}" 2>&1 | grep -v "^$" | sed 's/^/  /'
@@ -73,10 +74,20 @@ plymouth-themes
 PKGS
 
 cat > config/package-lists/polelinux-firmware.list.chroot << 'FW'
-firmware-linux
-firmware-linux-nonfree
 amd64-microcode
 intel-microcode
+# Targeted firmware instead of bloatware firmware-linux/firmware-linux-nonfree
+firmware-amd-graphics
+firmware-misc-nonfree
+firmware-realtek
+firmware-iwlwifi
+firmware-bnx2
+firmware-bnx2x
+firmware-cxgb3
+firmware-cxgb4
+firmware-netxen
+firmware-qlogic
+firmware-myricom
 FW
 
 # --- Plymouth theme ---
@@ -230,6 +241,13 @@ plymouth-set-default-theme polelinux || true
 
 # Compile GSettings schemas (sets default wallpaper for all users)
 glib-compile-schemas /usr/share/glib-2.0/schemas/ || true
+
+# Optimize initramfs — only include needed modules (speeds boot significantly)
+cat > /etc/initramfs-tools/initramfs.conf << 'INITRAMFS'
+MODULES=dep
+BUSYBOX=y
+COMPRESS=zstd
+INITRAMFS
 
 # Enable services
 systemctl enable gdm3 network-manager pipewire pipewire-pulse wireplumber || true
