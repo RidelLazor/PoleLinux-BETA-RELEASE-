@@ -28,7 +28,7 @@ LB_CONFIG_OPTS=(
   --archive-areas "main contrib non-free non-free-firmware"
   --bootappend-live "quiet splash"
   --bootappend-install ""
-  --debian-installer false
+  --debian-installer none
   --iso-volume "PoleLinux"
   --iso-publisher "PoleLinux"
   --iso-application "PoleLinux Live"
@@ -165,6 +165,7 @@ cat > config/includes.chroot/etc/locale.gen << 'LOCALE'
 en_US.UTF-8 UTF-8
 LOCALE
 
+mkdir -p config/includes.chroot/etc/default
 cat > config/includes.chroot/etc/default/locale << 'LOCDEF'
 LANG=en_US.UTF-8
 LOCDEF
