@@ -116,7 +116,7 @@ def make_wallpaper():
         font_sm = font_lg
 
     title = "PoleLinux"
-    subtitle = "1.0  —  Powered by Debian"
+    subtitle = "1.0  -  Powered by Debian"
 
     bbox = draw.textbbox((0, 0), title, font=font_lg)
     tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]

@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     debootstrap \
     python3-pil \
     python3 \
+    fonts-dejavu-core \
     curl \
     ca-certificates \
     systemd-container \
