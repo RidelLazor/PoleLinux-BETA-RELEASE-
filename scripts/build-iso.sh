@@ -36,7 +36,7 @@ LB_CONFIG_OPTS=(
   --memtest none
   --hdd-label "POLELINUX"
   --binary-images iso-hybrid
-  --compression zstd
+  --binary-compression xz
 )
 
 lb config "${LB_CONFIG_OPTS[@]}" 2>&1 | grep -v "^$" | sed 's/^/  /'
@@ -76,18 +76,11 @@ PKGS
 cat > config/package-lists/polelinux-firmware.list.chroot << 'FW'
 amd64-microcode
 intel-microcode
-# Targeted firmware instead of bloatware firmware-linux/firmware-linux-nonfree
+# Targeted firmware — avoids firmware-linux bloat (hundreds of unnecessary firmware files)
 firmware-amd-graphics
 firmware-misc-nonfree
 firmware-realtek
 firmware-iwlwifi
-firmware-bnx2
-firmware-bnx2x
-firmware-cxgb3
-firmware-cxgb4
-firmware-netxen
-firmware-qlogic
-firmware-myricom
 FW
 
 # --- Plymouth theme ---
