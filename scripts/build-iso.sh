@@ -45,27 +45,20 @@ lb config "${LB_CONFIG_OPTS[@]}" 2>&1 | grep -v "^$" | sed 's/^/  /'
 mkdir -p config/package-lists
 
 cat > config/package-lists/polelinux-desktop.list.chroot << 'PKGS'
-# PoleLinux desktop packages
-task-gnome-desktop
-gdm3
+# PoleLinux desktop packages (LXDE)
+task-lxde-desktop
+lxdm
 firefox-esr
 celluloid
 file-roller
-gnome-tweaks
-gnome-software
-seahorse
-baobab
 network-manager
 network-manager-gnome
 pipewire
 pipewire-pulse
 wireplumber
-gstreamer1.0-plugins-good
-gstreamer1.0-plugins-bad
-gstreamer1.0-plugins-ugly
-gstreamer1.0-libav
 sudo
 nano
+vim
 htop
 git
 neofetch
@@ -93,16 +86,14 @@ cp /build/plymouth-theme/polelinux.script config/includes.chroot/usr/share/plymo
 mkdir -p config/includes.chroot/usr/share/backgrounds/polelinux
 cp /build/images/wallpaper.png config/includes.chroot/usr/share/backgrounds/polelinux/
 
-# --- GSettings default wallpaper (applies to all users) ---
-mkdir -p config/includes.chroot/usr/share/glib-2.0/schemas/
-cat > config/includes.chroot/usr/share/glib-2.0/schemas/99_polelinux.gschema.override << 'GOVERRIDE'
-[org.gnome.desktop.background]
-picture-uri = 'file:///usr/share/backgrounds/polelinux/wallpaper.png'
-picture-uri-dark = 'file:///usr/share/backgrounds/polelinux/wallpaper.png'
-picture-options = 'zoom'
-[org.gnome.desktop.screensaver]
-picture-uri = 'file:///usr/share/backgrounds/polelinux/wallpaper.png'
-GOVERRIDE
+# --- LXDE wallpaper config (PCManFM) ---
+mkdir -p config/includes.chroot/etc/skel/.config/pcmanfm/lxde/
+cat > config/includes.chroot/etc/skel/.config/pcmanfm/lxde/pcmanfm.conf << 'PCMANFM'
+[Desktop]
+wallpaper_mode=stretch
+wallpaper=/usr/share/backgrounds/polelinux/wallpaper.png
+desktop_bg=#0a0a12
+PCMANFM
 
 # --- Neofetch config (PoleLinux logo + full system info) ---
 mkdir -p config/includes.chroot/usr/share/polelinux
@@ -232,9 +223,6 @@ echo "%sudo ALL=(ALL:ALL) ALL" > /etc/sudoers.d/wheel
 # Set Plymouth theme
 plymouth-set-default-theme polelinux || true
 
-# Compile GSettings schemas (sets default wallpaper for all users)
-glib-compile-schemas /usr/share/glib-2.0/schemas/ || true
-
 # Optimize initramfs — only include needed modules (speeds boot significantly)
 cat > /etc/initramfs-tools/initramfs.conf << 'INITRAMFS'
 MODULES=dep
@@ -243,7 +231,7 @@ COMPRESS=zstd
 INITRAMFS
 
 # Enable services
-systemctl enable gdm3 network-manager pipewire pipewire-pulse wireplumber || true
+systemctl enable lxdm network-manager pipewire pipewire-pulse wireplumber || true
 
 # Set default target to graphical
 systemctl set-default graphical.target || true
