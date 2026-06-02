@@ -36,7 +36,7 @@ LB_CONFIG_OPTS=(
   --memtest none
   --hdd-label "POLELINUX"
   --binary-images iso-hybrid
-  --binary-compression xz
+  --chroot-squashfs-compression-type xz
 )
 
 lb config "${LB_CONFIG_OPTS[@]}" 2>&1 | grep -v "^$" | sed 's/^/  /'
