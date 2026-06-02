@@ -104,7 +104,14 @@ picture-options = 'zoom'
 picture-uri = 'file:///usr/share/backgrounds/polelinux/wallpaper.png'
 GOVERRIDE
 
-
+# --- Neofetch config (PoleLinux logo + full system info) ---
+mkdir -p config/includes.chroot/usr/share/polelinux
+cp /build/plymouth-theme/logo-ascii.txt config/includes.chroot/usr/share/polelinux/
+mkdir -p config/includes.chroot/etc/skel/.config/neofetch
+cat > config/includes.chroot/etc/skel/.config/neofetch/config.conf << 'NEOFETCH'
+ascii_file="/usr/share/polelinux/logo-ascii.txt"
+ascii_colors=(4 6)
+NEOFETCH
 
 # --- GRUB theme ---
 mkdir -p config/includes.chroot/boot/grub/themes/polelinux
