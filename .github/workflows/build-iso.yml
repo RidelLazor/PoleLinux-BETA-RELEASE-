@@ -27,7 +27,22 @@ jobs:
             -v /var/cache/pacman/pkg:/var/cache/pacman/pkg:ro \
             polelinux-arch-builder \
             bash -x /build/scripts/build-iso.sh 2>&1 | tee build.log
-        continue-on-error: true
+
+      - name: Verify ISO output
+        run: |
+          if [ ! -d build-env/out ]; then
+            echo "build-env/out directory was not created. The ISO build likely failed."
+            exit 1
+          fi
+
+          shopt -s nullglob
+          iso_files=(build-env/out/*.iso)
+          if [ ${#iso_files[@]} -eq 0 ]; then
+            echo "No .iso files were generated in build-env/out/."
+            exit 1
+          fi
+
+          ls -l "${iso_files[@]}"
 
       - name: Upload build log
         if: always()
@@ -43,4 +58,5 @@ jobs:
         with:
           name: polelinux-iso
           path: build-env/out/*.iso
+          if-no-files-found: error
           retention-days: 30
