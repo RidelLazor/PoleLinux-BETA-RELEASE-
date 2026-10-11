@@ -223,9 +223,9 @@ echo "%sudo ALL=(ALL:ALL) ALL" > /etc/sudoers.d/wheel
 # Set Plymouth theme
 plymouth-set-default-theme polelinux || true
 
-# Optimize initramfs — only include needed modules (speeds boot significantly)
+# Optimize initramfs — use most modules for live-build compatibility
 cat > /etc/initramfs-tools/initramfs.conf << 'INITRAMFS'
-MODULES=dep
+MODULES=most
 BUSYBOX=y
 COMPRESS=zstd
 INITRAMFS
